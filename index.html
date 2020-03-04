@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="styles.css" media="screen" />
+  </head>
+  <body>
+    <div id="container"></div>
+    <script>
+      // ----------------------------------------------
+      // ---------------- Cubes Class -----------------
+      // ----------------------------------------------
+
+      class Cubes {
+        constructor(projections, boxLines, boxVertices, goodPoints, badPoints) {
+          this.projections = projections;
+          this.boxLines = boxLines;
+          this.boxVertices = boxVertices;
+          this.goodPoints = goodPoints;
+          this.badPoints = badPoints;
+        }
+
+        drawAllProjections = () => {
+          this.projections.forEach(this.drawOneProjection);
+        };
+
+        drawOneProjection = projection => {
+          const { canvas, ctx } = this.createCanvasAndContext();
+          this.drawBox(projection, canvas, ctx);
+          this.drawPoints(this.goodPoints, "good", ctx, projection);
+          this.drawPoints(this.badPoints, "bad", ctx, projection);
+        };
+
+        createCanvasAndContext = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 300;
+          canvas.height = 300;
+          document.getElementById("container").appendChild(canvas);
+          const ctx = canvas.getContext("2d");
+          return { canvas, ctx };
+        };
+
+        drawBox = (projection, canvas, context) => {
+          context.fillStyle = "#000000";
+          context.strokeStyle = "#FFFFFF";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          const vertices = this.boxVertices.map(projection);
+          this.boxLines.forEach(seg => {
+            const [start, end] = seg;
+            context.beginPath();
+            context.moveTo(vertices[start][0], vertices[start][1]);
+            context.lineTo(vertices[end][0], vertices[end][1]);
+            context.stroke();
+          });
+        };
+
+        drawPoints = (points, pointType, context, projection) => {
+          const color = pointType === "good" ? "green" : "red";
+          context.strokeStyle = color;
+          context.fillStyle = color;
+          const projectedPoints = points.map(projection);
+          projectedPoints.forEach(point => {
+            context.beginPath();
+            const xCenter = point[0];
+            const yCenter = point[1];
+            context.arc(xCenter, yCenter, 5, 0, 2 * Math.PI);
+            context.stroke();
+            context.fill();
+          });
+        };
+      }
+
+      // ----------------------------------------------
+      // ---------------- Define inputs ---------------
+      // ----------------------------------------------
+
+      const goodPoints = [
+        [0.5, 0.5, 0.5],
+        [0.6, 0.4, 0.8],
+        [0.3, 0.7, 0.7]
+      ];
+
+      const badPoints = [
+        [1.5, 0.3, 0.6],
+        [0.4, 0.6, 1.4],
+        [0.8, 1.3, 1.3],
+        [-0.2, -0.3, 0.0],
+        [1.2, 1.1, 0.1]
+      ];
+
+      const boxLines = [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 0],
+        [4, 5],
+        [5, 6],
+        [6, 7],
+        [7, 4],
+        [0, 4],
+        [1, 5],
+        [2, 6],
+        [3, 7]
+      ];
+
+      const boxVertices = [
+        [0, 0, 0],
+        [0, 1, 0],
+        [0, 1, 1],
+        [0, 0, 1],
+        [1, 0, 0],
+        [1, 1, 0],
+        [1, 1, 1],
+        [1, 0, 1]
+      ];
+
+      const obliqueProjection = coords => {
+        const [x, y, z] = coords;
+        return [50 + x * 100 + 40 * z, 20 + y * 100 + 80 * z];
+      };
+
+      const ZViewProjection = coords => {
+        const [x, y, z] = coords;
+        return [50 + x * 100, 20 + y * 100];
+      };
+
+      const XViewProjection = coords => {
+        const [x, y, z] = coords;
+        return [50 + y * 100, 20 + z * 100];
+      };
+
+      // ----------------------------------------------
+      // ------ Instantiate an instance of Cubes ------
+      // ----------------------------------------------
+
+      const cubes = new Cubes(
+        [obliqueProjection, ZViewProjection, XViewProjection],
+        boxLines,
+        boxVertices,
+        goodPoints,
+        badPoints
+      );
+
+      cubes.drawAllProjections();
+    </script>
+  </body>
+</html>
